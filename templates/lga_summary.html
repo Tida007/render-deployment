@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LGA Summary - Bincom Polling</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        h1 {
+            color: #333;
+            font-size: 2em;
+        }
+        .back-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .back-link:hover {
+            background: #667eea;
+            color: white;
+        }
+        .select-section {
+            margin-bottom: 30px;
+        }
+        .select-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+        }
+        .select-section select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .select-section select:hover {
+            border-color: #667eea;
+        }
+        .select-section select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .results-container {
+            margin-top: 30px;
+        }
+        .lga-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .lga-info h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .results-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .results-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+        .party-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .vote-count {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .total-row {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .no-selection {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗳️ LGA Summary</h1>
+            <a href="/" class="back-link">← Back to Home</a>
+        </div>
+        
+        <div class="select-section">
+            <label for="lgaSelect">Select Local Government Area (LGA):</label>
+            <select id="lgaSelect" onchange="loadLGASummary()">
+                <option value="">-- Select an LGA --</option>
+                {% for lga in lgas %}
+                <option value="{{ lga.lga_id }}">{{ lga.lga_name }}</option>
+                {% endfor %}
+            </select>
+            <div style="margin-top: 10px; padding: 10px; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px; font-size: 0.9em; color: #1565c0;">
+                <strong>Note:</strong> These totals are calculated by summing all polling unit results within the selected LGA. 
+                This is NOT from the announced_lga_results table (which is for comparison purposes only).
+            </div>
+        </div>
+        
+        <div id="resultsContainer" class="results-container">
+            <div class="no-selection">
+                <p>Please select an LGA from the dropdown above to view the summary.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        async function loadLGASummary() {
+            const lgaId = document.getElementById('lgaSelect').value;
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            if (!lgaId) {
+                resultsContainer.innerHTML = '<div class="no-selection"><p>Please select an LGA from the dropdown above to view the summary.</p></div>';
+                return;
+            }
+            
+            resultsContainer.innerHTML = '<div class="loading">Loading...</div>';
+            
+            try {
+                const response = await fetch(`/lgas/${lgaId}/summary`);
+                if (!response.ok) {
+                    throw new Error('Failed to load LGA summary');
+                }
+                
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                resultsContainer.innerHTML = `<div class="loading" style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function displayResults(data) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const lgaName = document.getElementById('lgaSelect').selectedOptions[0].text;
+            
+            if (!data.party_totals || data.party_totals.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="lga-info">
+                        <h2>${lgaName}</h2>
+                        <p>No results found for this LGA.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let tableRows = '';
+            let totalVotes = 0;
+            
+            data.party_totals.forEach(result => {
+                totalVotes += result.party_score;
+                tableRows += `
+                    <tr>
+                        <td><span class="party-badge">${result.party_abbreviation}</span></td>
+                        <td><span class="vote-count">${result.party_score.toLocaleString()}</span></td>
+                    </tr>
+                `;
+            });
+            
+            resultsContainer.innerHTML = `
+                <div class="lga-info">
+                    <h2>${lgaName}</h2>
+                    <p>LGA ID: ${data.lga_id}</p>
+                    <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                        <strong>Calculated Sum:</strong> Total votes from all polling units in this LGA
+                    </p>
+                </div>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Party</th>
+                            <th>Total Votes (Sum of All Polling Units)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                        <tr class="total-row">
+                            <td><strong>Grand Total</strong></td>
+                            <td><strong>${totalVotes.toLocaleString()}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        }
+    </script>
+</body>
+</html>
+

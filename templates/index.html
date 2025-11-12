@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bincom Polling Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .nav-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+        .nav-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .nav-card h2 {
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+        .nav-card p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        .api-link {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
+            text-align: center;
+        }
+        .api-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .api-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏛️ Bincom Polling Results System</h1>
+        
+        <div class="nav-cards">
+            <a href="/polling-unit/1" class="nav-card">
+                <h2>📊 Individual Polling Unit</h2>
+                <p>View detailed results for a specific polling unit. Enter a polling unit ID to see all party results.</p>
+            </a>
+            
+            <a href="/lga-summary" class="nav-card">
+                <h2>🗳️ LGA Summary</h2>
+                <p>View summed total results for all polling units in a Local Government Area. Select an LGA from the dropdown.</p>
+            </a>
+        </div>
+        
+        <div class="api-link">
+            <p>📚 <a href="/docs">API Documentation</a> - Interactive API docs with Swagger UI</p>
+        </div>
+    </div>
+</body>
+</html>
+

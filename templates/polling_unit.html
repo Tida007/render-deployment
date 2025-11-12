@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polling Unit Results - {{ polling_unit_id }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        h1 {
+            color: #333;
+            font-size: 2em;
+        }
+        .back-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .back-link:hover {
+            background: #667eea;
+            color: white;
+        }
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .info-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .info-item {
+            margin: 10px 0;
+            display: flex;
+        }
+        .info-label {
+            font-weight: bold;
+            width: 200px;
+            color: #555;
+        }
+        .info-value {
+            color: #333;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .results-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .results-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+        .party-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .vote-count {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .total-row {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .search-box button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .search-box button:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Polling Unit Results</h1>
+            <a href="/" class="back-link">← Back to Home</a>
+        </div>
+        
+        <div class="search-box">
+            <input type="number" id="puIdInput" placeholder="Enter Polling Unit ID (e.g., 1, 2, 3...)" value="{{ polling_unit_id }}">
+            <button onclick="searchPollingUnit()">Search</button>
+        </div>
+        
+        <div class="info-section">
+            <h2>Polling Unit Information</h2>
+            <div class="info-item">
+                <span class="info-label">Polling Unit ID:</span>
+                <span class="info-value">{{ polling_unit.polling_unit_id }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Polling Unit Name:</span>
+                <span class="info-value">{{ polling_unit.polling_unit_name or 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Polling Unit Number:</span>
+                <span class="info-value">{{ polling_unit.polling_unit_number or 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">LGA ID:</span>
+                <span class="info-value">{{ polling_unit.lga_id }}</span>
+            </div>
+        </div>
+        
+        <h2 style="margin-bottom: 15px; color: #333;">Party Results</h2>
+        
+        {% if polling_unit.results %}
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Party</th>
+                    <th>Votes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in polling_unit.results %}
+                <tr>
+                    <td><span class="party-badge">{{ result.party_abbreviation }}</span></td>
+                    <td><span class="vote-count">{{ result.party_score }}</span></td>
+                </tr>
+                {% endfor %}
+                <tr class="total-row">
+                    <td><strong>Total Votes</strong></td>
+                    <td><strong>{{ polling_unit.results | sum(attribute='party_score') }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        {% else %}
+        <div style="text-align: center; padding: 40px; color: #999;">
+            <p>No results found for this polling unit.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <script>
+        function searchPollingUnit() {
+            const puId = document.getElementById('puIdInput').value;
+            if (puId) {
+                window.location.href = `/polling-unit/${puId}`;
+            }
+        }
+        
+        // Allow Enter key to search
+        document.getElementById('puIdInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPollingUnit();
+            }
+        });
+    </script>
+</body>
+</html>
+
