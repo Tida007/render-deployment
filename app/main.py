@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Depends
 from fastapi.responses import HTMLResponse
 from jinja2 import Environment, FileSystemLoader
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.database import get_db
 from app.routers import polling_units, lgas
 from app.models import LGA
@@ -51,16 +52,36 @@ def lga_summary_page(request: Request, db: Session = Depends(get_db)):
     """
     Feature 2: Display LGA summary with select box
     """
-    lgas_list = db.query(LGA).order_by(LGA.lga_name).all()
-    template = templates.get_template("lga_summary.html")
-    return HTMLResponse(content=template.render(
-        request=request,
-        lgas=lgas_list
-    ))
+    try:
+        lgas_list = db.query(LGA).order_by(LGA.lga_name).all()
+        template = templates.get_template("lga_summary.html")
+        return HTMLResponse(content=template.render(
+            request=request,
+            lgas=lgas_list
+        ))
+    except Exception as e:
+        template = templates.get_template("error.html")
+        return HTMLResponse(content=template.render(
+            request=request,
+            error_message=f"Database error: {str(e)}"
+        ), status_code=500)
 
 
 @app.get("/health", tags=["health"])
-def health_check():
-    return {"status": "ok"}
+def health_check(db: Session = Depends(get_db)):
+    """Health check endpoint that also tests database connection"""
+    try:
+        # Test database connection
+        db.execute(text("SELECT 1"))
+        return {
+            "status": "ok",
+            "database": "connected"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "database": "disconnected",
+            "error": str(e)
+        }
 
 
