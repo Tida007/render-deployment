@@ -25,11 +25,6 @@ A FastAPI application for displaying and managing Nigerian polling unit election
   - Set a root password (remember this!)
   - Skip sample databases (sakila, world)
 
-#### Create Database
-The database `bincom_polling` should already be created. If not, run:
-```powershell
-python create_database.py
-```
 
 #### Import SQL Dump
 1. Download the SQL dump file from the Google Drive link above
